@@ -1,0 +1,22 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/ecommerce-realm
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    url: /v3/api-docs
+keycloak:
+  auth-server-url: http://localhost:8080/auth
+  realm: ecommerce-realm
+  client-id: usermanager
+  admin-username: admin
+  admin-password: admin
+server:
+  port: 8180

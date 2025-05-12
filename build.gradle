@@ -1,0 +1,100 @@
+
+buildscript {
+	dependencies {
+		classpath("org.openapitools:openapi-generator-gradle-plugin:7.12.0")
+	}
+}
+
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.5'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.openapi.generator' version '7.12.0'
+}
+
+group = 'cm.fastrelay'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	runtimeOnly 'com.h2database:h2'
+//	runtimeOnly 'org.postgresql:postgresql'
+
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	//OPEN API
+	implementation("org.openapitools:openapi-generator:7.12.0")
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.4'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+openApiGenerate {
+	generatorName = "spring"
+	templateDir = "$rootDir/openapi/templates/spring-boot".toString()
+	inputSpec = "$rootDir/openapi/main.yaml".toString()
+	outputDir = layout.buildDirectory.file("generated/sources/openapi").get().asFile.path
+	apiPackage = "cm.fastrelay.usermanager.api"
+	modelPackage = "cm.fastrelay.usermanager.model"
+	configOptions = [
+			dateLibrary: "java8-localdatetime",
+			library: "spring-boot",
+			interfaceOnly: "true",
+			useTags: "true",
+			skipDefaultInterface: "true",
+			useSpringBoot3: "true",
+			openApiNullable: "false"
+	]
+	typeMappings = [
+			"time": "java.time.LocalTime",
+			"date": "java.time.LocalDate",
+			"date-time": "java.time.LocalDateTime"
+	]
+	importMappings = [
+			"LocalTime": "java.time.LocalTime",
+			"LocalDate": "java.time.LocalDate",
+			"LocalDateTime": "java.time.LocalDateTime"
+	]
+}
+
+sourceSets {
+	main {
+		java {
+			srcDir "$buildDir/generated/src/main/java"
+		}
+	}
+}
+
+compileJava.dependsOn(
+		tasks.openApiGenerate,
+)
+sourceSets.main.java.srcDir layout.buildDirectory.file("generated/sources/openapi/src/main/java").get().asFile.path
+

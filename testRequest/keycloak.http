@@ -1,0 +1,49 @@
+### 1. Configuration des variables de base
+@baseUrl = http://localhost:8080
+@realm = ecommerce-realm
+@clientId = usermanager
+@adminUser = admin
+@adminPass = admin
+
+### 2. Obtenir le token admin (endpoint standard Keycloak)
+POST {{baseUrl}}/realms/{{realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id={{clientId}}
+    &username={{adminUser}}
+    &password={{adminPass}}
+    &grant_type=password
+
+> {%
+    client.global.set("access_token", response.body.access_token);
+    client.log("Token obtenu : " + response.body.access_token);
+%}
+
+### 3. Créer un utilisateur dans ecommerce-realm
+POST {{baseUrl}}/admin/realms/{{realm}}/users
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "username": "client_test",
+  "email": "client@ecommerce.com",
+  "enabled": true,
+  "credentials": [
+    {
+      "type": "password",
+      "value": "Password123!",
+      "temporary": false
+    }
+  ],
+  "attributes": {
+    "commerceId": "12345"
+  }
+}
+
+### 4. Récupérer les infos du realm (test)
+GET {{baseUrl}}/admin/realms/{{realm}}
+Authorization: Bearer {{access_token}}
+
+### 5. Lister les clients du realm
+GET {{baseUrl}}/admin/realms/{{realm}}/clients
+Authorization: Bearer {{access_token}}

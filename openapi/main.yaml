@@ -1,0 +1,68 @@
+openapi: 3.0.3
+info:
+  title: "Authentication Manager REST API"
+  description: "API for managing user authentication, including registration, login, and token management."
+  version: "0.0.1-SNAPSHOT"
+servers:
+  - url: "http://localhost:8180/api"
+tags:
+  - name: "User"
+    description: "Endpoints for user authentication and account management."
+paths:
+  /public/user/register:
+    post:
+      summary: "User registration"
+      description: "Registers a new user and returns the created user details."
+      operationId: "registerUser"
+      tags:
+        - "User"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserDto'
+      responses:
+        200:
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserIdDto'
+components:
+  schemas:
+    RegisterUserDto:
+      type: "object"
+      required:
+        - "username"
+        - "password"
+      properties:
+        username:
+          type: "string"
+        password:
+          type: "string"
+        email:
+          type: "string"
+        phoneNumber:
+          $ref: "#/components/schemas/PhoneNumberDto"
+        firstName:
+          type: "string"
+        lastName:
+          type: "string"
+    PhoneNumberDto:
+      type: "object"
+      required:
+        - "countryCode"
+        - "number"
+      properties:
+        countryCode:
+          type: "string"
+        number:
+          type: "string"
+    UserIdDto:
+      type: "object"
+      required:
+        - "id"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
