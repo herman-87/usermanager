@@ -1,0 +1,48 @@
+spring:
+  datasource:
+    url: "${DATA_URL:jdbc:postgresql://localhost:5433/db_usermanager}"
+    username: "${DATA_USERNAME:postgres}"
+    password: "${DATA_PASSWORD:1234}"
+    driver-class-name: "${DRIVER_CLASS_NAME:org.postgresql.Driver}"
+    hikari:
+      maximum-pool-size: "${HIKARI_MAX_PULL_SIZE:9}"
+  jpa:
+    hibernate:
+      ddl-auto: "${JPA_HIBERNATE_DDLAUTO:validate}"
+    properties:
+      hibernate:
+        dialect: "org.hibernate.dialect.PostgreSQLDialect"
+  liquibase:
+    change-log: "classpath:db/changelog/master.xml"
+    clear-check-sums: ${LIQUIBASE_CLEARCHECKSUMS:true}
+  h2:
+    console:
+      enabled: true
+      path: "/h2-console"
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI:http://localhost:8080/realms/ecommerce-realm}
+          jwk-set-uri: ${SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI:http://localhost:8080/realms/ecommerce-realm/protocol/openid-connect/certs}
+
+keycloak:
+  admin:
+    api:
+      base-url: ${KEYCLOAK_ADMIN_API_BASEURL:http://localhost:8080/admin/realms/ecommerce-realm}
+  token:
+    api:
+      base-url: ${KEYCLOAK_TOKEN_API_BASEURL:http://localhost:8080/realms/ecommerce-realm}
+  client:
+    id: ${KEYCLOAK_CLIENT_ID:usermanager}
+    secret: ${KEYCLOAK_CLIENT_SECRET:1inx1dNG6t8OLxPfjcKAGzDrVGZbfvNn}
+  realm:
+    name: ${KEYCLOAK_REALM_NAME:ecommerce-realm}
+
+server:
+  port: ${SERVER_PORT:8180}
+
+logging:
+  level:
+    root: ${LOGGING_LEVEL_ROOT:error}

@@ -32,19 +32,36 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	runtimeOnly 'com.h2database:h2'
-//	runtimeOnly 'org.postgresql:postgresql'
+	//database
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.liquibase:liquibase-core'
 
+    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'com.h2database:h2'
+
+	//security
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
+//	implementation 'org.springframework.boot:spring-boot-starter-security'
 
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
+	implementation 'org.mapstruct:mapstruct:1.6.3'
+	implementation 'org.mapstruct:mapstruct-processor:1.6.3'
+
+	//lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+	testCompileOnly("org.projectlombok:lombok")
+	testAnnotationProcessor("org.projectlombok:lombok")
 
-	//OPEN API
+	// mapstruct
+	implementation 'org.mapstruct:mapstruct:1.6.3'
+	annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
+	testAnnotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
+
+	//openapi
 	implementation("org.openapitools:openapi-generator:7.12.0")
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.4'
 
@@ -64,6 +81,7 @@ openApiGenerate {
 	outputDir = layout.buildDirectory.file("generated/sources/openapi").get().asFile.path
 	apiPackage = "cm.fastrelay.usermanager.api"
 	modelPackage = "cm.fastrelay.usermanager.model"
+	modelNameSuffix = "Dto"
 	configOptions = [
 			dateLibrary: "java8-localdatetime",
 			library: "spring-boot",
@@ -85,6 +103,27 @@ openApiGenerate {
 	]
 }
 
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+tasks.register('keycloakOpenApiGenerate', GenerateTask) {
+	generatorName = "spring"
+	templateDir = "$rootDir/openapi/templates/spring-http-interface".toString()
+	inputSpec = "$rootDir/openapi/keycloak.yaml".toString()
+	outputDir = layout.buildDirectory.dir("generated/sources/openapi").get().asFile.path
+	apiPackage = "cm.fastrelay.keycloak.api"
+	modelPackage = "cm.fastrelay.keycloak.dto"
+	modelNamePrefix = "Keycloak"
+	modelNameSuffix = "Dto"
+	configOptions = [
+			dateLibrary  : "java8-localdatetime",
+			library      : "spring-http-interface",
+			interfaceOnly: "true",
+			useTags      : "true",
+	]
+	typeMappings = [
+			time: "java.time.LocalTime",
+	]
+}
+
 sourceSets {
 	main {
 		java {
@@ -95,6 +134,7 @@ sourceSets {
 
 compileJava.dependsOn(
 		tasks.openApiGenerate,
+		tasks.keycloakOpenApiGenerate
 )
 sourceSets.main.java.srcDir layout.buildDirectory.file("generated/sources/openapi/src/main/java").get().asFile.path
 

@@ -1,86 +1,112 @@
 package cm.fastrelay.usermanager.services;
 
-import cm.fastrelay.usermanager.model.RegisterUserDto;
+import cm.fastrelay.keycloak.api.KeycloakAdminUserApi;
+import cm.fastrelay.keycloak.api.KeycloakAuthApi;
+import cm.fastrelay.keycloak.dto.KeycloakTokenResponseDto;
+import cm.fastrelay.keycloak.dto.KeycloakUserDto;
+import cm.fastrelay.usermanager.config.security.TokenContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestClient;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-@RequiredArgsConstructor
+/**
+ * <p>
+ * <strong>DynamicTokenInterceptor</strong>: this class is responsible for
+ * dynamically injecting the authentication token into each outgoing request.
+ * </p>
+ */
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class KeycloakService {
 
-    private final RestClient keycloakRestClient;
+    private final KeycloakAuthApi keycloakAuthApi;
+    private final KeycloakAdminUserApi keycloakAdminUserApi;
 
-    @Value("${keycloak.realm}")
-    private String realm;
-
-    @Value("${keycloak.client-id}")
+    @Value("${keycloak.client.id}")
     private String clientId;
 
-    @Value("${keycloak.admin-username}")
-    private String adminUsername;
+    @Value("${keycloak.client.secret}")
+    private String clientSecret;
 
-    @Value("${keycloak.admin-password}")
-    private String adminPassword;
+    @Value("${keycloak.realm.name}")
+    private String realm;
 
-    @Transactional
-    public UUID createUser(RegisterUserDto userDto) {
-        String token = getAdminToken();
-
-        var userPayload = Map.of(
-                "username", userDto.getUsername(),
-                "email", userDto.getEmail(),
-                "enabled", true,
-                "credentials", List.of(Map.of(
-                        "type", "password",
-                        "value", userDto.getPassword(),
-                        "temporary", false
-                ))
-        );
-
-        URI location = keycloakRestClient.post()
-                .uri("/admin/realms/{realm}/users", realm)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .body(userPayload)
-                .retrieve()
-                .toBodilessEntity()
-                .getHeaders()
-                .getLocation();
-
-        return extractUserId(location);
+    public String getToken() {
+        String grantType = "client_credentials";
+        ResponseEntity<KeycloakTokenResponseDto> response = keycloakAuthApi.getToken(grantType, clientId, clientSecret);
+        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+            return response.getBody().getAccessToken();
+        } else {
+            log.error("Failed to retrieve access token from Keycloak");
+            throw new IllegalStateException("Failed to retrieve access token from Keycloak");
+        }
     }
 
-    private String getAdminToken() {
-        var formData = Map.of(
-                "client_id", clientId,
-                "username", adminUsername,
-                "password", adminPassword,
-                "grant_type", "password"
-        );
+    public String createUser(KeycloakUserDto keycloakUserDto) {
+        try {
+            String token = this.getToken();
+            TokenContext.setToken(token);
 
-        var response = keycloakRestClient.post()
-                .uri("/realms/master/protocol/openid-connect/token")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(formData)
-                .retrieve()
-                .toEntity(Map.class)
-                .getBody();
+            ResponseEntity<Void> response = keycloakAdminUserApi.createUser(keycloakUserDto);
+            HttpHeaders headers = response.getHeaders();
+            URI location = headers.getLocation();
 
-        return (String) response.get("access_token");
+            if (location == null || !response.getStatusCode().is2xxSuccessful()) {
+                log.error("Failed to create user in Keycloak. Status: {}", response.getStatusCode());
+                throw new IllegalStateException("User creation failed in Keycloak");
+            }
+
+            String path = location.getPath();
+            String userId = path.substring(path.lastIndexOf('/') + 1);
+
+            log.info("User successfully created in realm {} with ID {}", realm, userId);
+            return userId;
+        } finally {
+            TokenContext.clear();
+        }
     }
 
-    private UUID extractUserId(URI location) {
-        String path = location.getPath();
-        return UUID.fromString(path.substring(path.lastIndexOf('/') + 1));
+    public void deleteByUserId(UUID id) {
+        try {
+            String token = this.getToken();
+            TokenContext.setToken(token);
+
+            ResponseEntity<Void> response = keycloakAdminUserApi.deleteUser(id.toString());
+
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                log.error("Failed to delete user in Keycloak. Status: {}", response.getStatusCode());
+                throw new IllegalStateException("User deletion failed in Keycloak");
+            }
+
+            log.info("User with ID {} successfully deleted from realm {}", id, realm);
+        } finally {
+            TokenContext.clear();
+        }
+    }
+
+    public void update(String userId, KeycloakUserDto keycloakUserDto) {
+        try {
+            String token = this.getToken();
+            TokenContext.setToken(token);
+
+            ResponseEntity<Void> response = keycloakAdminUserApi.updateUser(userId, keycloakUserDto);
+
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                log.error("Failed to update user in Keycloak. Status: {}", response.getStatusCode());
+                throw new IllegalStateException("User update failed in Keycloak");
+            }
+
+            log.info("User with ID {} successfully updated in realm {}", userId, realm);
+        } finally {
+            TokenContext.clear();
+        }
     }
 }

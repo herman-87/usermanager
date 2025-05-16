@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+    <changeSet id="v1:1" author="essoungou.wonga">
+        <createTable tableName="t_user">
+            <column name="c_id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="c_username" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="c_password" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="c_email" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="c_enabled" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="c_firstname" type="varchar(255)"/>
+            <column name="c_lastname" type="varchar(255)"/>
+            <column name="c_email_is_verified" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="c_phone_number" type="varchar(15)"/>
+            <column name="c_created_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="c_updated_at" type="timestamp"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="v1:2" author="essoungou.wonga" context="test">
+        <insert tableName="t_user">
+            <column name="c_id" value="550e8400-e29b-41d4-a716-446655440000"/>
+            <column name="c_username" value="username-test"/>
+            <column name="c_password" value="$2a$10$Vf0MZjfdxW9q3sGEyQdG1ed7qPpWQmrzHhLsK2BzRimKwY6G7lzMu"/>
+            <column name="c_email" value="username.test@gmail.com"/>
+            <column name="c_enabled" valueBoolean="true"/>
+            <column name="c_firstname" value="John"/>
+            <column name="c_lastname" value="Doe"/>
+            <column name="c_email_is_verified" valueBoolean="false"/>
+            <column name="c_phone_number" value="237;612345678"/>
+            <column name="c_created_at" valueDate="2025-05-23T10:00:00"/>
+            <column name="c_updated_at" value="NULL"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

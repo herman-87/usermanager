@@ -2,16 +2,27 @@
 @baseUrl = http://localhost:8080
 @realm = ecommerce-realm
 @clientId = usermanager
-@adminUser = admin
-@adminPass = admin
+@clientSecret = 1inx1dNG6t8OLxPfjcKAGzDrVGZbfvNn
+@grantType = client_credentials
+@username = johndoe
+@password = 1234
 
-### 2. Obtenir le token admin (endpoint standard Keycloak)
+### 1. Get Access Token using client_credentials
+POST {{baseUrl}}/realms/{{realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type={{grantType}}
+    &client_id={{clientId}}
+    &client_secret={{clientSecret}}
+
+### 2. Get User token
 POST {{baseUrl}}/realms/{{realm}}/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
 client_id={{clientId}}
-    &username={{adminUser}}
-    &password={{adminPass}}
+    &client_secret={{clientSecret}}
+    &username={{username}}
+    &password={{password}}
     &grant_type=password
 
 > {%
@@ -21,7 +32,8 @@ client_id={{clientId}}
 
 ### 3. Créer un utilisateur dans ecommerce-realm
 POST {{baseUrl}}/admin/realms/{{realm}}/users
-Authorization: Bearer {{access_token}}
+#Authorization: Bearer {{access_token}}
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJWbGR3MjZOWWQxajZSd201U09WQmxrWGIwSEFpOW9ZcWZHMnFJNG8tcnk0In0.eyJleHAiOjE3NDcyNDUyNDQsImlhdCI6MTc0NzI0NDk0NCwianRpIjoiYWNmOGY5NTYtNDU1NC00MTE3LWExNzUtNGZiMDE4MjgxOWNmIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9lY29tbWVyY2UtcmVhbG0iLCJhdWQiOlsicmVhbG0tbWFuYWdlbWVudCIsImFjY291bnQiXSwic3ViIjoiYTYxNzc0MTItYTRlNi00ODk3LTliZGYtNWVjNzMwZmZjNTIyIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoidXNlcm1hbmFnZXIiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbImh0dHA6Ly9sb2NhbGhvc3Q6ODA4MSJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsImRlZmF1bHQtcm9sZXMtZWNvbW1lcmNlLXJlYWxtIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsicmVhbG0tbWFuYWdlbWVudCI6eyJyb2xlcyI6WyJ2aWV3LXJlYWxtIiwidmlldy1pZGVudGl0eS1wcm92aWRlcnMiLCJtYW5hZ2UtaWRlbnRpdHktcHJvdmlkZXJzIiwiaW1wZXJzb25hdGlvbiIsInJlYWxtLWFkbWluIiwiY3JlYXRlLWNsaWVudCIsIm1hbmFnZS11c2VycyIsInF1ZXJ5LXJlYWxtcyIsInZpZXctYXV0aG9yaXphdGlvbiIsInF1ZXJ5LWNsaWVudHMiLCJxdWVyeS11c2VycyIsIm1hbmFnZS1ldmVudHMiLCJtYW5hZ2UtcmVhbG0iLCJ2aWV3LWV2ZW50cyIsInZpZXctdXNlcnMiLCJ2aWV3LWNsaWVudHMiLCJtYW5hZ2UtYXV0aG9yaXphdGlvbiIsIm1hbmFnZS1jbGllbnRzIiwicXVlcnktZ3JvdXBzIl19LCJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJjbGllbnRIb3N0IjoiMTcyLjE3LjAuMSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwicHJlZmVycmVkX3VzZXJuYW1lIjoic2VydmljZS1hY2NvdW50LXVzZXJtYW5hZ2VyIiwiY2xpZW50QWRkcmVzcyI6IjE3Mi4xNy4wLjEiLCJjbGllbnRfaWQiOiJ1c2VybWFuYWdlciJ9.ldbT_0ycU45DyPY5cqZZKGPyDpUb_nmTe3gRUgvf1bIMB8erXdmRGOGGEFgYatgplOvRRuoQNgHtApvm-g2ZCWak4iapf3AuNYabqFajkZoGnx1kM_Vkdcqj0EewSPFea026cglH4CSjAJIeZ7VYTjXh3JIbtgAjPS1KNoPW61zWzSmetN4p_K6A8nIj-OnfUIVhfj_HeW2V9Xmqp0E26pWmCIIpIAhc1eJzhurO-7do6uhDO7FtZCXCP5Y-u5SRitBdkxY4lrW-5neZpbSq8k4Tchx4wXJlhOVDMavHu6Cg8WF0sMaOlKEG1cdY_XpGbDivcd7ajmzZxUIjsWx-mg
 Content-Type: application/json
 
 {

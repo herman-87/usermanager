@@ -20,17 +20,112 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterUserDto'
+              $ref: '#/components/schemas/RegisterUser'
       responses:
         200:
           description: "Successful operation"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserIdDto'
+                $ref: '#/components/schemas/UserId'
+  /user/{id}:
+    get:
+      summary: "Get user by ID"
+      operationId: "getUserById"
+      tags:
+        - "User"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          description: "The ID of the user to retrieve"
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        200:
+          description: "User found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: "User not found"
+    delete:
+      summary: "Delete user by ID"
+      description: "Deletes an existing user by their ID."
+      operationId: "deleteUserById"
+      tags:
+        - "User"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          description: "The ID of the user to delete"
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        204:
+          description: "User successfully deleted"
+        404:
+          description: "User not found"
+  /user/me:
+    get:
+      summary: "Get current authenticated user"
+      operationId: "getCurrentUser"
+      tags:
+        - "User"
+      security:
+        - bearerAuth: [ ]
+      responses:
+        200:
+          description: "Current user information"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        401:
+          description: "Unauthorized – User is not authenticated"
+    put:
+      summary: "Update my user information"
+      description: "Updates the information of the currently authenticated user and returns the updated user details."
+      operationId: "updateMyUserInfo"
+      tags:
+        - "User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUser'
+      responses:
+        200:
+          description: "User updated successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        401:
+          description: "Unauthorized - Authentication token is missing or invalid"
+        403:
+          description: "Forbidden - The user does not have permission to perform this operation"
 components:
   schemas:
-    RegisterUserDto:
+    UpdateUser:
+      type: "object"
+      properties:
+        username:
+          type: "string"
+        email:
+          type: "string"
+        phoneNumber:
+          $ref: "#/components/schemas/PhoneNumber"
+        firstName:
+          type: "string"
+        lastName:
+          type: "string"
+    RegisterUser:
       type: "object"
       required:
         - "username"
@@ -43,12 +138,12 @@ components:
         email:
           type: "string"
         phoneNumber:
-          $ref: "#/components/schemas/PhoneNumberDto"
+          $ref: "#/components/schemas/PhoneNumber"
         firstName:
           type: "string"
         lastName:
           type: "string"
-    PhoneNumberDto:
+    PhoneNumber:
       type: "object"
       required:
         - "countryCode"
@@ -58,7 +153,7 @@ components:
           type: "string"
         number:
           type: "string"
-    UserIdDto:
+    UserId:
       type: "object"
       required:
         - "id"
@@ -66,3 +161,24 @@ components:
         id:
           type: "string"
           format: "uuid"
+    User:
+      type: "object"
+      required:
+        - "id"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        username:
+          type: "string"
+        password:
+          type: "string"
+        email:
+          type: "string"
+        phoneNumber:
+          $ref: "#/components/schemas/PhoneNumber"
+        firstName:
+          type: "string"
+        lastName:
+          type: "string"
+
