@@ -1,38 +1,37 @@
-
 buildscript {
-	dependencies {
-		classpath("org.openapitools:openapi-generator-gradle-plugin:7.12.0")
-	}
+    dependencies {
+        classpath("org.openapitools:openapi-generator-gradle-plugin:7.12.0")
+    }
 }
 
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.4.5'
-	id 'io.spring.dependency-management' version '1.1.7'
-	id 'org.openapi.generator' version '7.12.0'
+    id 'java'
+    id 'org.springframework.boot' version '3.4.5'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.openapi.generator' version '7.12.0'
 }
 
 group = 'cm.fastrelay'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	//database
+    //database
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -41,100 +40,105 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'com.h2database:h2'
 
-	//security
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
-//	implementation 'org.springframework.boot:spring-boot-starter-security'
+    //security
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 
-	implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    implementation 'org.mapstruct:mapstruct-processor:1.6.3'
 
-	implementation 'org.mapstruct:mapstruct:1.6.3'
-	implementation 'org.mapstruct:mapstruct-processor:1.6.3'
+    //lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly("org.projectlombok:lombok")
+    testAnnotationProcessor("org.projectlombok:lombok")
 
-	//lombok
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
-	testCompileOnly("org.projectlombok:lombok")
-	testAnnotationProcessor("org.projectlombok:lombok")
+    // mapstruct
+    annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
+    testAnnotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
 
-	// mapstruct
-	implementation 'org.mapstruct:mapstruct:1.6.3'
-	annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
-	testAnnotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
+    //openapi
+    implementation("org.openapitools:openapi-generator:7.12.0")
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.4'
 
-	//openapi
-	implementation("org.openapitools:openapi-generator:7.12.0")
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.4'
+    //spring cloud
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:2024.0.0"
+    }
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 openApiGenerate {
-	generatorName = "spring"
-	templateDir = "$rootDir/openapi/templates/spring-boot".toString()
-	inputSpec = "$rootDir/openapi/main.yaml".toString()
-	outputDir = layout.buildDirectory.file("generated/sources/openapi").get().asFile.path
-	apiPackage = "cm.fastrelay.usermanager.api"
-	modelPackage = "cm.fastrelay.usermanager.model"
-	modelNameSuffix = "Dto"
-	configOptions = [
-			dateLibrary: "java8-localdatetime",
-			library: "spring-boot",
-			interfaceOnly: "true",
-			useTags: "true",
-			skipDefaultInterface: "true",
-			useSpringBoot3: "true",
-			openApiNullable: "false"
-	]
-	typeMappings = [
-			"time": "java.time.LocalTime",
-			"date": "java.time.LocalDate",
-			"date-time": "java.time.LocalDateTime"
-	]
-	importMappings = [
-			"LocalTime": "java.time.LocalTime",
-			"LocalDate": "java.time.LocalDate",
-			"LocalDateTime": "java.time.LocalDateTime"
-	]
+    generatorName = "spring"
+    templateDir = "$rootDir/openapi/templates/spring-boot".toString()
+    inputSpec = "$rootDir/openapi/main.yaml".toString()
+    outputDir = layout.buildDirectory.file("generated/sources/openapi").get().asFile.path
+    apiPackage = "cm.fastrelay.usermanager.api"
+    modelPackage = "cm.fastrelay.usermanager.model"
+    modelNameSuffix = "Dto"
+    configOptions = [
+            dateLibrary: "java8-localdatetime",
+            library: "spring-boot",
+            interfaceOnly: "true",
+            useTags: "true",
+            skipDefaultInterface: "true",
+            useSpringBoot3: "true",
+            openApiNullable: "false"
+    ]
+    typeMappings = [
+            "time": "java.time.LocalTime",
+            "date": "java.time.LocalDate",
+            "date-time": "java.time.LocalDateTime"
+    ]
+    importMappings = [
+            "LocalTime": "java.time.LocalTime",
+            "LocalDate": "java.time.LocalDate",
+            "LocalDateTime": "java.time.LocalDateTime"
+    ]
 }
 
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 tasks.register('keycloakOpenApiGenerate', GenerateTask) {
-	generatorName = "spring"
-	templateDir = "$rootDir/openapi/templates/spring-http-interface".toString()
-	inputSpec = "$rootDir/openapi/keycloak.yaml".toString()
-	outputDir = layout.buildDirectory.dir("generated/sources/openapi").get().asFile.path
-	apiPackage = "cm.fastrelay.keycloak.api"
-	modelPackage = "cm.fastrelay.keycloak.dto"
-	modelNamePrefix = "Keycloak"
-	modelNameSuffix = "Dto"
-	configOptions = [
-			dateLibrary  : "java8-localdatetime",
-			library      : "spring-http-interface",
-			interfaceOnly: "true",
-			useTags      : "true",
-	]
-	typeMappings = [
-			time: "java.time.LocalTime",
-	]
+    generatorName = "spring"
+    templateDir = "$rootDir/openapi/templates/spring-http-interface".toString()
+    inputSpec = "$rootDir/openapi/keycloak.yaml".toString()
+    outputDir = layout.buildDirectory.dir("generated/sources/openapi").get().asFile.path
+    apiPackage = "cm.fastrelay.keycloak.api"
+    modelPackage = "cm.fastrelay.keycloak.dto"
+    modelNamePrefix = "Keycloak"
+    modelNameSuffix = "Dto"
+    configOptions = [
+            dateLibrary  : "java8-localdatetime",
+            library      : "spring-http-interface",
+            interfaceOnly: "true",
+            useTags      : "true",
+    ]
+    typeMappings = [
+            time: "java.time.LocalTime",
+    ]
 }
 
 sourceSets {
-	main {
-		java {
-			srcDir "$buildDir/generated/src/main/java"
-		}
-	}
+    main {
+        java {
+            srcDir layout.buildDirectory.file("generated/sources/openapi/src/main/java").get().asFile.path
+        }
+    }
 }
 
 compileJava.dependsOn(
-		tasks.openApiGenerate,
-		tasks.keycloakOpenApiGenerate
+        tasks.openApiGenerate,
+        tasks.keycloakOpenApiGenerate
 )
-sourceSets.main.java.srcDir layout.buildDirectory.file("generated/sources/openapi/src/main/java").get().asFile.path
-
