@@ -1,3 +1,6 @@
+server:
+  port: ${SERVER_PORT:8081}
+
 eureka:
   client:
     service-url:
@@ -63,9 +66,6 @@ usermanager:
       allowed-methods: "GET,POST,PUT,DELETE"
       allowed-headers: "*"
 
-server:
-  port: ${SERVER_PORT:8081}
-
 logging:
   level:
-    root: ${LOGGING_LEVEL_ROOT:error}
+    root: ${LOGGING_LEVEL_ROOT:info}
