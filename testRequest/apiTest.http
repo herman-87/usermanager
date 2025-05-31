@@ -1,5 +1,5 @@
 ####
-@baseUrl = http://localhost:8081
+@baseUrl = http://localhost:8083
 
 #### Get client realm
 POST http://localhost:8080/realms/ecommerce-realm/protocol/openid-connect/token
@@ -64,5 +64,5 @@ GET {{baseUrl}}/public/hello
 Accept: application/json
 
 ###
-GET http://localhost:8080/usermanager/public/hello
+GET http://localhost:8060/usermanager/public/hello
 Accept: application/json
