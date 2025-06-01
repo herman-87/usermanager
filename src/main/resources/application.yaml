@@ -36,6 +36,17 @@ spring:
           issuer-uri: ${SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI:http://localhost:8080/realms/ecommerce-realm}
           jwk-set-uri: ${SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI:http://localhost:8080/realms/ecommerce-realm/protocol/openid-connect/certs}
 
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka/}
+    fetch-registry: ${EUREKA_CLIENT_FETCH_REGISTRY:true}
+    register-with-eureka: ${EUREKA_CLIENT_REGISTER_WITH_EUREKA:true}
+  instance:
+    prefer-ip-address: ${EUREKA_INSTANCE_PREFER_IP_ADDRESS:true}
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
+    ip-address: ${EUREKA_INSTANCE_IP_ADDRESS:127.0.0.1}
+
 keycloak:
   admin:
     api:
