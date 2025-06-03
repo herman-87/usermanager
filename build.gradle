@@ -9,6 +9,7 @@ plugins {
     id 'org.springframework.boot' version '3.4.5'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.openapi.generator' version '7.12.0'
+    id 'com.google.cloud.tools.jib' version '3.4.5'
 }
 
 group = 'cm.fastrelay'
@@ -80,6 +81,32 @@ dependencyManagement {
     imports {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:2024.0.0"
     }
+}
+
+jib {
+    from {
+        image = "eclipse-temurin:21-jre"
+        platforms {
+            platform {
+                architecture = "amd64"
+                os = "linux"
+            }
+        }
+    }
+    to {
+        image = "herman87/fastrelay_usermanager"
+        tags = ["${project.version}", "latest"]
+    }
+    container {
+        jvmFlags = ['-Xmx512m', '-Xms256m']
+        mainClass = 'cm.fastrelay.discovery.DiscoveryApplication'
+        ports = ['8088']
+        environment = [
+                'SPRING_PROFILES_ACTIVE': 'docker'
+        ]
+        creationTime = 'USE_CURRENT_TIMESTAMP'
+    }
+    allowInsecureRegistries = false
 }
 
 tasks.named('test') {
