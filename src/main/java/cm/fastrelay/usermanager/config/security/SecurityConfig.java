@@ -11,7 +11,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static cm.fastrelay.usermanager.config.security.Scope.USER_ADMIN;
+import static cm.fastrelay.usermanager.config.security.Scope.USER_DELETE;
+import static cm.fastrelay.usermanager.config.security.Scope.USER_EDIT;
 import static cm.fastrelay.usermanager.config.security.Scope.USER_READ;
 
 @Configuration
@@ -43,33 +44,33 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(
-        HttpSecurity http,
-        KeycloakJwtAuthenticationConverter keycloakJwtAuthenticationConverter) throws Exception {
+            HttpSecurity http,
+            KeycloakJwtAuthenticationConverter keycloakJwtAuthenticationConverter) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(
-                authorizationManagerRequestMatcherRegistry ->
-                    authorizationManagerRequestMatcherRegistry
-                        .requestMatchers(
-                            HttpMethod.GET,
-                            "/user/{id:" + REGEX_UUID_WITH_DELIMITER + "}"
-                        ).hasRole(USER_READ)
-                        .requestMatchers("/user/me")
-                        .authenticated()
-                        .requestMatchers(
-                            HttpMethod.DELETE,
-                            "/user/{id:" + REGEX_UUID_WITH_DELIMITER + "}"
-                        ).hasRole(USER_ADMIN)
-                        .requestMatchers(
-                            HttpMethod.PUT,
-                            "/user/me"
-                        ).authenticated()
-                        .anyRequest()
-                        .denyAll())
-            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .oauth2ResourceServer(oauth2 ->
-                oauth2.jwt(jwtConfigurer ->
-                    jwtConfigurer.jwtAuthenticationConverter(keycloakJwtAuthenticationConverter)))
-            .build();
+                .authorizeHttpRequests(
+                        authorizationManagerRequestMatcherRegistry ->
+                                authorizationManagerRequestMatcherRegistry
+                                        .requestMatchers(
+                                                HttpMethod.GET,
+                                                "/user/{id:" + REGEX_UUID_WITH_DELIMITER + "}"
+                                        ).hasAuthority(USER_READ)
+                                        .requestMatchers("/user/me")
+                                        .authenticated()
+                                        .requestMatchers(
+                                                HttpMethod.DELETE,
+                                                "/user/{id:" + REGEX_UUID_WITH_DELIMITER + "}"
+                                        ).hasAuthority(USER_DELETE)
+                                        .requestMatchers(
+                                                HttpMethod.PUT,
+                                                "/user/me"
+                                        ).hasAuthority(USER_EDIT)
+                                        .anyRequest()
+                                        .denyAll())
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2ResourceServer(oauth2 ->
+                        oauth2.jwt(jwtConfigurer ->
+                                jwtConfigurer.jwtAuthenticationConverter(keycloakJwtAuthenticationConverter)))
+                .build();
     }
 
     @Bean

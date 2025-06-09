@@ -10,10 +10,9 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,7 +25,7 @@ public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, Abstra
     public AbstractAuthenticationToken convert(@NonNull Jwt jwt) {
         Collection<GrantedAuthority> authorities = Stream.concat(
                 defaultGrantedAuthoritiesConverter.convert(jwt).stream(),
-                extractAuthorities(jwt).stream()
+                extractScopes(jwt).stream()
         ).collect(Collectors.toSet());
 
         return new JwtAuthenticationToken(jwt, authorities, getPreferredUsername(jwt));
@@ -36,12 +35,16 @@ public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, Abstra
         return jwt.getClaim("preferred_username");
     }
 
-    private Collection<? extends GrantedAuthority> extractAuthorities(Jwt jwt) {
-        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
-        List<String> realmRoles = (List<String>) realmAccess.getOrDefault("roles", Collections.emptyList());
+    private Collection<? extends GrantedAuthority> extractScopes(Jwt jwt) {
+        String scopeClaim = jwt.getClaim("scope");
 
-        return realmRoles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+        if (scopeClaim == null || scopeClaim.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return Arrays.stream(scopeClaim.split("\\s+"))
+                .filter(scope -> !scope.isEmpty())
+                .map(scope -> new SimpleGrantedAuthority("SCOPE_" + scope))
                 .collect(Collectors.toSet());
     }
 }
