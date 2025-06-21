@@ -6,11 +6,11 @@ import cm.fastrelay.usermanager.model.UpdateUserDto;
 import cm.fastrelay.usermanager.model.UserDto;
 import cm.fastrelay.usermanager.model.UserIdDto;
 import cm.fastrelay.usermanager.services.UserService;
+import cm.fastrelay.usermanager.utils.CurrentUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -29,7 +29,7 @@ public class UserController implements UserApi {
 
     @Override
     public ResponseEntity<UserDto> getCurrentUser() {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getCurrentUserBy(getCurrentUsername()));
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getCurrentUserBy(CurrentUser.getUserName()));
     }
 
     @Override
@@ -46,16 +46,7 @@ public class UserController implements UserApi {
 
     @Override
     public ResponseEntity<UserDto> updateMyUserInfo(UpdateUserDto updateUserDto) {
-        userService.updateUser(getCurrentUsername(), updateUserDto);
+        userService.updateUser(CurrentUser.getUserName(), updateUserDto);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    private String getCurrentUsername() {
-        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        if (currentUsername == null) {
-            log.error("The Current Username Is Null");
-            throw new RuntimeException("The current username is null");
-        }
-        return currentUsername;
     }
 }
